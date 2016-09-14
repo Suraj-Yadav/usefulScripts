@@ -12,5 +12,5 @@ Can be called by editors like Notepad++, Visual Studio Code (Tasks) to perform t
 
 
 #### Note:
-* The path in the scripts are based on my system setup (Windows). They need too be changed.
+* The path in the scripts are based on my system setup (Windows). They need to be changed.
 * `cb_console_runner.exe` is the executable which comes with Code::Blocks. It runs the given program, and waits for keypress after it finishes. Also it shows the time taken by the program.  
