@@ -1,3 +1,7 @@
+REM 
+REM Batch Script I created originally for automating Compilation
+REM Currently i use a Shell Script.
+REM 
 @ECHO OFF
 IF "%~1" == "" GOTO NO_FILE
 IF "%2" == "" GOTO NO_FILE

@@ -1,5 +1,6 @@
 #
-# Shell Script to compile Scripts
+# Shell Script to automate Compilation and Running of C++ and Python scripts.
+# Can be called by editors like Notepad++, Visual Studio Code.
 #
 
 print_usage()

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun Jul 10 22:58:56 2016
-
+A simple Python Scripts which generates a Makefile for simple C++ Projects.
 @author: Suraj
 """
 
