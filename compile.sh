@@ -17,7 +17,7 @@ run()
 		cpp)
 			if ! [ -f $targetFile".exe" ]
 			then
-				echo $fullpath ":10:1: error" $targetFile".exe" "doesn't exist."
+				echo $fullpath":10:1:error:"$targetFile".exe doesn't exist."
 				exit 1
 			fi
 			start "" "/c/ExtLibs/cb_console_runner.exe" $targetFile
@@ -50,15 +50,6 @@ compile()
 					;;
 			esac
 			
-			if [ -f $targetFile".exe" ]
-			then
-				rm $targetFile".exe"
-			fi
-			if [ -f $targetFile".o" ]
-			then
-				rm $targetFile".o"
-			fi
-			
 			g++ -g -Wunreachable-code -std=c++11 -pedantic -Wextra -Wall $includeoptions -c "$fullpath" -o $targetFile".o"
 			
 			if [ $? -ne 0 ]
@@ -75,6 +66,24 @@ compile()
 				exit 1
 			fi
 			
+			;;
+		c)
+			gcc -g -Wunreachable-code -pedantic -Wextra -Wall -c "$fullpath" -o $targetFile".o"
+			
+			if [ $? -ne 0 ]
+			then
+				echo Compilation Failed
+				exit 1
+			fi
+			
+			g++.exe -o $targetFile".exe" $targetFile".o"
+			
+			if [ $? -ne 0 ]
+			then
+				echo Compilation Failed
+				exit 1
+			fi
+
 			;;
 		# java)
 			# start "" "/c/ExtLibs/cb_console_runner.exe" %JAVA_HOME%/bin/javac -cp %CP% "$filename"
@@ -130,7 +139,28 @@ case $2 in
 		;;
 	COMPILE)
 		"/g/Program Files/Cppcheck/cppcheck.exe" --enable=all $fullpath
+		if [ $extension == "cpp" ] || [ $extension == "c" ]
+		then
+			if [ -f $targetFile".exe" ]
+			then
+				rm $targetFile".exe"
+			fi
+			if [ -f $targetFile".o" ]
+			then
+				rm $targetFile".o"
+			fi
+		fi
 		compile
+		if [ $extension == "cpp" ] || [ $extension == "c" ]
+		then
+			if [ -f $targetFile".o" ]
+			then
+				rm $targetFile".o"
+			fi
+		fi
+		;;
+	CPPCHECK)
+		"/g/Program Files/Cppcheck/cppcheck.exe" --enable=all $fullpath
 		;;
 esac
 exit 0
