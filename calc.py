@@ -1,6 +1,6 @@
 from math import *
 from math import factorial as fact
-
+#An init script for python/ipython to be used as a calculator.
 # def fact(n):
 	# return factorial(n)
 
