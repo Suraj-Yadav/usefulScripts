@@ -11,3 +11,5 @@ def nCr(n, r):
 
 def nPr(n, r):
 	return fact(n) // fact(n - r)
+	
+	

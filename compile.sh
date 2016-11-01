@@ -50,7 +50,7 @@ compile()
 					;;
 			esac
 			
-			g++ -g -Wunreachable-code -std=c++11 -pedantic -Wextra -Wall $includeoptions -c "$fullpath" -o $targetFile".o"
+			g++ -g -Wunreachable-code -std=c++14 -pedantic -Wextra -Wall $includeoptions -c "$fullpath" -o $targetFile".o"
 			
 			if [ $? -ne 0 ]
 			then
@@ -138,7 +138,7 @@ case $2 in
 		run
 		;;
 	COMPILE)
-		"/g/Program Files/Cppcheck/cppcheck.exe" --enable=all $fullpath
+		# "/g/Program Files/Cppcheck/cppcheck.exe" --enable=all $fullpath
 		if [ $extension == "cpp" ] || [ $extension == "c" ]
 		then
 			if [ -f $targetFile".exe" ]
