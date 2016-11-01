@@ -5,10 +5,9 @@
 
 print_usage()
 {
-	echo Usage: "compile[.sh] FileName (COMPILE|RUN|CPPCHECK) [targetName]"
-	echo "'targetName' - name of the executable created or which executable to run"
-	echo "               No extension is required"
-	echo "               Default value = a"
+	echo Usage: "compile[.sh] FileName (COMPILE|COMPILEN|RUN|CPPCHECK)"
+	echo "COMPILE creates the executable file with name a.exe"
+	echo "COMPILEN creates the executable file with name same as filename"
 }
 
 run()
@@ -97,7 +96,7 @@ compile()
 	echo Compilation Complete
 }
 
-if [ $# -ne 2 ] && [ $# -ne 3 ]
+if [ $# -ne 2 ]
 then
 	echo ERROR: Wrong number of arguments
 	print_usage
@@ -110,19 +109,15 @@ then
 	exit 1
 fi
 
-if [ $2 != "COMPILE" ] && [ $2 != "RUN" ] && [ $2 != "CPPCHECK" ]
+if [ $2 != "COMPILE" ] && [ $2 != "RUN" ] && [ $2 != "CPPCHECK" ] && [ $2 != "COMPILEN" ]
 then
 	echo "ERROR: '"$2"'" "is not a valid Command"
 	print_usage
 	exit 1
 fi
 
-if [ $# -eq 3 ]
-then
-	targetFile=$3
-else
-	targetFile="/g/work/c++_progs/a"
-fi
+
+targetFile="/g/work/c++_progs/a"
 
 fullpath=$1
 extension=$([[ "$1" = *.* ]] && echo "${1##*.}" || echo '')
@@ -137,6 +132,10 @@ case $2 in
 	RUN)
 		run
 		;;
+	COMPILEN)
+		targetFile=$(basename $fullpath)
+		targetFile="${targetFile%.*}"
+		;&
 	COMPILE)
 		# "/g/Program Files/Cppcheck/cppcheck.exe" --enable=all $fullpath
 		if [ $extension == "cpp" ] || [ $extension == "c" ]
