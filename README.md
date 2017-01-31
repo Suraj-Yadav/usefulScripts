@@ -8,11 +8,12 @@ I mainly use it for updating Dependecies after changing the includes in source f
 
 ## compile.sh oldCompile.cmd
 Script to automate Compilation and Running of C++ and Python scripts.
-Can be called by editors like Notepad++, Visual Studio Code (Tasks) to perform the task from the editor.
+Can be called by editors like Notepad++, Visual Studio Code (using Tasks) to perform the task from the editor.
 
 
-## calc.py
-An init script for python/ipython to be used as a calculator.
+## sampleJudge.py
+Script to automate running of TestCases for Competitive Coding. The test cases are read from the Source Code, and the script based on the Language used, chooses the correct commands for running the program.
+
 
 #### Note:
 * The path in the scripts are based on my system setup (Windows). They need to be changed.

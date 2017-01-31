@@ -1,3 +1,4 @@
+#!/bin/sh
 #
 # Shell Script to automate Compilation and Running of C++ and Python scripts.
 # Can be called by editors like Notepad++, Visual Studio Code.
@@ -49,7 +50,7 @@ compile()
 					;;
 			esac
 			
-			g++ -g -Wunreachable-code -std=c++14 -pedantic -Wextra -Wall $includeoptions -c "$fullpath" -o $targetFile".o"
+			g++ -g -Wunreachable-code -std=c++14 -pedantic -Wextra -Wall -Wshadow $includeoptions -c "$fullpath" -o $targetFile".o"
 			
 			if [ $? -ne 0 ]
 			then
@@ -57,7 +58,7 @@ compile()
 				exit 1
 			fi
 			
-			g++.exe -o $targetFile".exe" $targetFile".o" $linkeroptions
+			g++ -pg -o $targetFile".exe" $targetFile".o" $linkeroptions
 			
 			if [ $? -ne 0 ]
 			then
@@ -79,7 +80,7 @@ compile()
 			
 			if [ $? -ne 0 ]
 			then
-				echo Compilation Failed
+				echo "Compilation Failed"
 				exit 1
 			fi
 
@@ -89,6 +90,9 @@ compile()
 			# ;;
 		py)
 			start "" "/c/ExtLibs/cb_console_runner.exe" python $fullpath
+			;;
+		java)
+			javac "$fullpath"
 			;;
 		*)
 			echo $extension "not implemented yet"
