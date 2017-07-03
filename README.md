@@ -6,8 +6,10 @@ Some Scripts I created for automating basic stuff.
 A Python Script which generates a Makefile for simple C++ Projects. The Makefile is dumped to stdout. 
 I mainly use it for updating Dependecies after changing the includes in source files.
 
-## compile.sh oldCompile.cmd
-Script to automate Compilation and Running of C++ and Python scripts.
+## compile.py compile.sh oldCompile.cmd
+Script to automate Compilation and Running of C++, Java and Python scripts.
+Switched to Python3, as it was easier to work with than Shell Scripts.
+Python Script process the output of `javac` to add Column No in warnings and error.
 Can be called by editors like Notepad++, Visual Studio Code (using Tasks) to perform the task from the editor.
 
 

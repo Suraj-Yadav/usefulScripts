@@ -45,12 +45,12 @@ compile()
 					linkeroptions="-LC:\ExtLibs\SFML-2.3\lib -lsfml-audio -lsfml-network -lsfml-graphics -lsfml-window -lsfml-system"
 					;;
 				"/*OPENGL*/")
-					includeoptions="-IC:\ExtLibs\SFML-2.3\include -IC:\ExtLibs\glew-1.12.0\include"
-					linkeroptions="-LC:\ExtLibs\SFML-2.3\lib -LC:\ExtLibs\glew-1.12.0\lib -lsfml-audio -lsfml-network -lsfml-graphics -lsfml-window -lsfml-system -lGLU32 -lGLEW32 -lopengl32"
+					includeoptions="-IC:\ExtLibs\SFML-2.3\include -IC:\ExtLibs\glew-1.12.0\include -IC:\ExtLibs\freeglut\include"
+					linkeroptions="-LC:\ExtLibs\SFML-2.3\lib -LC:\ExtLibs\glew-1.12.0\lib -LC:\ExtLibs\freeglut\lib -lsfml-audio -lsfml-network -lsfml-graphics -lsfml-window -lsfml-system -lfreeglut -lGLU32 -lGLEW32 -lopengl32"
 					;;
 			esac
 			
-			g++ -g -Wunreachable-code -std=c++14 -pedantic -Wextra -Wall -Wshadow $includeoptions -c "$fullpath" -o $targetFile".o"
+			g++ -g -std=c++14 -Wpedantic -Wextra -Wall -Wunused $includeoptions -c "$fullpath" -o $targetFile".o"
 			
 			if [ $? -ne 0 ]
 			then
@@ -122,9 +122,15 @@ fi
 
 
 targetFile="/g/work/c++_progs/a"
-
 fullpath=$1
+ten=$(basename $fullpath)
+ten="${ten%.*}"
 extension=$([[ "$1" = *.* ]] && echo "${1##*.}" || echo '')
+if [[ "$ten" == *_brute ]]
+then
+    targetFile=$(basename $fullpath)
+	targetFile="${targetFile%.*}"
+fi
 
 if [ -z $extension ]
 then

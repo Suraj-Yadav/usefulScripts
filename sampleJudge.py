@@ -1,8 +1,11 @@
+#!/usr/bin/env python3
 """ Runs the Program on the given TestCases """
 
 import subprocess
 from sys import argv
 from sys import platform
+from sys import stdout
+from sys import stdin
 from os import path
 
 if len(argv) != 2:
@@ -30,26 +33,31 @@ filename, file_extension = path.splitext(argv[1])
 if file_extension == ".java":
 	command = ["java", filename]
 elif file_extension == ".py":
-	command = ["python", argv[1]]		#Note Change this to python3 if you code in that
+	command = ["python3", argv[1]]
 elif file_extension == ".c" or file_extension == ".cpp":
 	if platform.startswith('win32'):
-		command = ["a.exe"]
+		command = [filename + '.exe']
 	else:
-		command = ["./a.out"]
+		command = [filename + '.out']
 
-while i < len(sampleTestCases) and sampleTestCases[i] != "***/\n":
+while i < len(sampleTestCases) and "***/" not in sampleTestCases[i]:
 	inputString = ""
-	while i < len(sampleTestCases) and sampleTestCases[i] != "\n" and sampleTestCases[i] != "***/\n":
+	while (i < len(sampleTestCases) and sampleTestCases[i] != "\n" and
+                "***/" not in sampleTestCases[i]):
 		inputString += sampleTestCases[i]
 		i += 1
-	if i < len(sampleTestCases) and sampleTestCases[i] == "***/\n":
-		i = len(sampleTestCases)
+	if i < len(sampleTestCases) and "***/" in sampleTestCases[i]:
+		break
 	else:
 		i += 1
 	if inputString == "":
 		continue
-	program = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True)
+	# print(inputString)
+	program = subprocess.Popen(command, stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE, universal_newlines=True)
 	o = program.communicate(inputString)
 	print("############")
+	# print(inputString)
 	print(o[0])
+	print("returned", program.returncode)
 	t += 1
