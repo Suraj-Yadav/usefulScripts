@@ -1,21 +1,35 @@
 #!/usr/bin/env python3
-""" Runs the Program on the given TestCases """
+# -*- coding: utf-8 -*-
+"""
+Reads TestCases from the given File and runs the File on each Test Set
+"""
 
 import subprocess
 from sys import argv
 from sys import platform
-from sys import stdout
-from sys import stdin
 from os import path
+import argparse
 
-if len(argv) != 2:
-	print("ERROR")
-	print("Usage: python3 sampleJudge.py <FileName>")
-	exit()
 
-sampleTestCases = open(argv[1]).readlines()
+def allowedFiles(choices):
+	def CheckExt(choices, fileName):
+		if not path.isfile(fileName):
+			raise argparse.ArgumentTypeError('File "' + fileName + '" doesn\'t Exist')
+		ext = path.splitext(fileName)[1][1:]
+		if ext not in choices:
+			raise argparse.ArgumentTypeError(
+				'Only {} files are supported'.format(choices))
+		return fileName
+	return lambda fileName: CheckExt(choices, fileName)
 
-# print(sampleTestCases)
+
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('file',
+                    type=allowedFiles({'py', 'cpp', 'c', 'java'}),
+                    help='Source File to Test')
+sourceFile = parser.parse_args().file
+
+sampleTestCases = open(sourceFile).readlines()
 
 i = 0
 while i < len(sampleTestCases) and sampleTestCases[i] != "/***\n":

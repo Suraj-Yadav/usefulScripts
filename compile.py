@@ -1,19 +1,41 @@
 #!/usr/bin/env python3
-""" Compiles the Source Code """
+# -*- coding: utf-8 -*-
+"""
+Compiles the given Source Code.
+"""
 
 import subprocess
-from sys import argv
 from sys import platform
 from os import path
 from os import environ
 from os import remove
+from typing import List
+import argparse
 
-if len(argv) != 2:
-	print("ERROR")
-	print("Usage: compile.py <FileName>")
-	exit()
 
-sourceFile = argv[1]
+def allowedFiles(choices):
+	def CheckExt(choices, fileName):
+		if not path.isfile(fileName):
+			raise argparse.ArgumentTypeError('File "' + fileName + '" doesn\'t Exist')
+		ext = path.splitext(fileName)[1][1:]
+		if ext not in choices:
+			raise argparse.ArgumentTypeError(
+				'Only {} files are supported'.format(choices))
+		return fileName
+	return lambda fileName: CheckExt(choices, fileName)
+
+
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('file',
+                    type=allowedFiles({'cpp', 'c', 'java'}),
+                    help='Source File to Compile')
+
+parser.add_argument('buildType', default='COMPILE', nargs='?',
+                    choices=['COMPILE', 'DEBUG', 'PROFILE'],
+                    help='Type of Build. Only applicable for C/C++ files, ignored otherwise')
+args = parser.parse_args()
+sourceFile = args.file
+
 (filePathWithoutExt, fileExtension) = path.splitext(sourceFile)
 
 command = []
@@ -32,7 +54,14 @@ if fileExtension == '.cpp' or fileExtension == '.c':
 
 	includeOptions = []
 	linkerOptions = []
-	flags = ['-g', '-std=c++14', '-Wpedantic', '-Wextra', '-Wall']
+	flags = []
+	if args.buildType == 'COMPILE':
+		flags += ['-O2']
+	elif args.buildType == 'DEBUG':
+		flags += ['-g']
+	elif args.buildType == 'PROFILE':
+		flags += ['-O2', '-pg']
+	flags += ['-std=c++14', '-Wpedantic', '-Wextra', '-Wall']
 
 	if firstLine == '/*SFML*/':
 		includeOptions = ['-IC:\\ExtLibs\\SFML-2.3\\include']
