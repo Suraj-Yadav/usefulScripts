@@ -9,6 +9,7 @@ from sys import platform
 from os import path
 from os import environ
 from os import remove
+from os import system
 from typing import List
 import argparse
 
@@ -24,6 +25,19 @@ def allowedFiles(choices):
 		return fileName
 	return lambda fileName: CheckExt(choices, fileName)
 
+def isModifiled(inputFileName):
+
+	if not path.exists("." + inputFileName):
+		changesNo = system("cp " + inputFileName + " ." + inputFileName)
+		return True
+	else:
+		changesNo = system("diff " + inputFileName + " ." + inputFileName + " >.filechanges")
+
+		if changesNo > 0:
+			changesNo = system("cp " + inputFileName + " ." + inputFileName)
+			return True
+		else:
+			return False;
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('file',
@@ -87,7 +101,7 @@ if fileExtension == '.cpp' or fileExtension == '.c':
 	command += linkerOptions
 	command += [sourceFile]
 
-	if path.exists(targetFile):
+	if path.exists(targetFile) and isModifiled(sourceFile):
 		remove(targetFile)
 
 elif fileExtension == '.java':
@@ -135,3 +149,4 @@ if fileExtension == '.java':
 		i += 1
 	# print(err)
 	print(*err, sep='')
+	
