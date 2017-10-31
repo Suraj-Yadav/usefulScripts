@@ -5,7 +5,6 @@ Reads TestCases from the given File and runs the File on each Test Set
 """
 
 import subprocess
-from sys import argv
 from sys import platform
 from os import path
 import argparse
@@ -14,11 +13,10 @@ import argparse
 def allowedFiles(choices):
 	def CheckExt(choices, fileName):
 		if not path.isfile(fileName):
-			raise argparse.ArgumentTypeError('File "' + fileName + '" doesn\'t Exist')
+			raise argparse.ArgumentTypeError(f'File "{fileName}" doesn\'t Exist')
 		ext = path.splitext(fileName)[1][1:]
 		if ext not in choices:
-			raise argparse.ArgumentTypeError(
-				'Only {} files are supported'.format(choices))
+			raise argparse.ArgumentTypeError(f'Only {choices} type files are supported')
 		return fileName
 	return lambda fileName: CheckExt(choices, fileName)
 
@@ -36,18 +34,18 @@ while i < len(sampleTestCases) and sampleTestCases[i] != "/***\n":
 	i += 1
 
 if i == len(sampleTestCases):
-	print("No TestCase found in file:", argv[1])
+	print("No TestCase found in file:", sourceFile)
 	exit()
 
 i += 1
 t = 1
 
-filename, file_extension = path.splitext(argv[1])
+filename, file_extension = path.splitext(sourceFile)
 
 if file_extension == ".java":
 	command = ["java", filename]
 elif file_extension == ".py":
-	command = ["python3", argv[1]]
+	command = ["python3", sourceFile[1]]
 elif file_extension == ".c" or file_extension == ".cpp":
 	if platform.startswith('win32'):
 		command = [filename + '.exe']
@@ -66,12 +64,13 @@ while i < len(sampleTestCases) and "***/" not in sampleTestCases[i]:
 		i += 1
 	if inputString == "":
 		continue
-	# print(inputString)
-	program = subprocess.Popen(command, stdin=subprocess.PIPE,
-                            stdout=subprocess.PIPE, universal_newlines=True)
+
+	program = subprocess.Popen(command,
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE,
+                            universal_newlines=True)
 	o = program.communicate(inputString)
 	print("############")
-	# print(inputString)
 	print(o[0])
 	print("returned", program.returncode)
 	t += 1
