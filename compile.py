@@ -88,7 +88,10 @@ if fileExtension == '.cpp' or fileExtension == '.c':
 	command += [sourceFile]
 
 	if path.exists(targetFile):
-		remove(targetFile)
+		if path.getmtime(sourceFile) >= path.getmtime(targetFile):
+			remove(targetFile)
+		else:
+			exit(0)
 
 elif fileExtension == '.java':
 	command = ["javac", '-Xlint:all', '-cp',
