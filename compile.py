@@ -61,7 +61,7 @@ if fileExtension == '.cpp' or fileExtension == '.c':
 		flags += ['-g']
 	elif args.buildType == 'PROFILE':
 		flags += ['-O2', '-pg']
-	flags += ['-std=c++14', '-Wpedantic', '-Wextra', '-Wall']
+	flags += ['-std=c++17', '-Wpedantic', '-Wextra', '-Wall', '-Wshadow']
 
 	if firstLine == '/*SFML*/':
 		includeOptions = ['-IC:\\ExtLibs\\SFML-2.3\\include']
@@ -88,7 +88,7 @@ if fileExtension == '.cpp' or fileExtension == '.c':
 	command += [sourceFile]
 
 	if path.exists(targetFile):
-		if path.getmtime(sourceFile) >= path.getmtime(targetFile):
+		if path.getmtime(sourceFile) >= path.getmtime(targetFile) or args.buildType != 'COMPILE':
 			remove(targetFile)
 		else:
 			exit(0)

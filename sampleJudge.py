@@ -5,9 +5,14 @@ Reads TestCases from the given File and runs the File on each Test Set
 """
 
 import subprocess
-from sys import platform
-from os import path
 import argparse
+from sys import platform, stdout
+from os import path
+from colorama import init, Fore
+from tabulate import tabulate
+
+if stdout.isatty():
+	init()
 
 
 def allowedFiles(choices):
@@ -38,39 +43,87 @@ if i == len(sampleTestCases):
 	exit()
 
 i += 1
-t = 1
 
 filename, file_extension = path.splitext(sourceFile)
 
 if file_extension == ".java":
 	command = ["java", filename]
 elif file_extension == ".py":
-	command = ["python3", sourceFile[1]]
+	command = ["python3", sourceFile]
 elif file_extension == ".c" or file_extension == ".cpp":
 	if platform.startswith('win32'):
 		command = [filename + '.exe']
 	else:
 		command = [filename + '.out']
 
+headers = ["input", "expected", "actual"]
+table = []
+
+totalTestCases = 0
+passedTestCases = 0
+failedTestCases = 0
+ignoredTestCases = 0
+
+
+def colorThis(string: str, color: str):
+	print(string)
+	return (color +
+         (Fore.RESET + '\n' + color).join(string.split('\n')) +
+            Fore.RESET)
+
+
 while i < len(sampleTestCases) and "***/" not in sampleTestCases[i]:
 	inputString = ""
-	while (i < len(sampleTestCases) and sampleTestCases[i] != "\n" and
-                "***/" not in sampleTestCases[i]):
+	outputString = ""
+	while (i < len(sampleTestCases) and
+                sampleTestCases[i] != "\n" and
+                "***/" not in sampleTestCases[i] and
+                "---" not in sampleTestCases[i]):
 		inputString += sampleTestCases[i]
 		i += 1
+
+	if "---" in sampleTestCases[i]:
+		i += 1
+
+	while (i < len(sampleTestCases) and
+                sampleTestCases[i] != "\n" and
+                "***/" not in sampleTestCases[i]):
+		outputString += sampleTestCases[i]
+		i += 1
+
 	if i < len(sampleTestCases) and "***/" in sampleTestCases[i]:
 		break
 	else:
 		i += 1
 	if inputString == "":
 		continue
-
+	totalTestCases += 1
 	program = subprocess.Popen(command,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             universal_newlines=True)
 	o = program.communicate(inputString)
-	print("############")
-	print(o[0])
-	print("returned", program.returncode)
-	t += 1
+	returnCode = program.returncode
+
+	if returnCode == 0 and outputString == "":
+		ignoredTestCases += 1
+		textColor = Fore.GREEN
+	elif returnCode == 0 and o[0].strip() == outputString.strip():
+		passedTestCases += 1
+		textColor = Fore.GREEN
+	else:
+		failedTestCases += 1
+		textColor = Fore.RED
+
+	table.append([colorThis(inputString, textColor),
+               colorThis(outputString, textColor),
+               colorThis(o[0] +
+                         ('' if returnCode == 0 else 'returned ' +
+                          str(returnCode)), textColor)])
+
+print(tabulate(table, headers, tablefmt="grid"))
+
+if ignoredTestCases + passedTestCases == totalTestCases:
+	print(Fore.GREEN, "PASSED", passedTestCases, '/', totalTestCases)
+else:
+	print(Fore.RED, "FAILED", passedTestCases, '/', totalTestCases)
