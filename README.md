@@ -10,3 +10,7 @@ Can be called by editors like [Notepad++](https://notepad-plus-plus.org/news/not
 
 ## sampleJudge.py
 Script to automate running of TestCases for Competitive Coding. The test cases are read from the Source Code, and the script based on the Language used, chooses the correct commands for running the program.
+
+
+## testCaseDownloader.py
+Script to automate downloading of TestCases for Competitive Coding. Currently supports only [Codeforces](http://codeforces.com). Can be configured to work with any configuration by editing the functions `getURLFromFile` and `whatToDoWithTestCase`.

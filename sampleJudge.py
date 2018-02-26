@@ -66,7 +66,6 @@ ignoredTestCases = 0
 
 
 def colorThis(string: str, color: str):
-	print(string)
 	return (color +
          (Fore.RESET + '\n' + color).join(string.split('\n')) +
             Fore.RESET)
@@ -107,7 +106,7 @@ while i < len(sampleTestCases) and "***/" not in sampleTestCases[i]:
 
 	if returnCode == 0 and outputString == "":
 		ignoredTestCases += 1
-		textColor = Fore.GREEN
+		textColor = Fore.RESET
 	elif returnCode == 0 and o[0].strip() == outputString.strip():
 		passedTestCases += 1
 		textColor = Fore.GREEN
@@ -126,4 +125,4 @@ print(tabulate(table, headers, tablefmt="grid"))
 if ignoredTestCases + passedTestCases == totalTestCases:
 	print(Fore.GREEN, "PASSED", passedTestCases, '/', totalTestCases)
 else:
-	print(Fore.RED, "FAILED", passedTestCases, '/', totalTestCases)
+	print(Fore.RED, "FAILED", failedTestCases, '/', totalTestCases)
