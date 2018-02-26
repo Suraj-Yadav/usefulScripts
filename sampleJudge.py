@@ -104,10 +104,13 @@ while i < len(sampleTestCases) and "***/" not in sampleTestCases[i]:
 	o = program.communicate(inputString)
 	returnCode = program.returncode
 
+	outputString = '\n'.join(list(map(str.strip, outputString.split('\n'))))
+	actualString = '\n'.join(list(map(str.strip, o[0].split('\n'))))
+
 	if returnCode == 0 and outputString == "":
 		ignoredTestCases += 1
 		textColor = Fore.RESET
-	elif returnCode == 0 and o[0].strip() == outputString.strip():
+	elif returnCode == 0 and actualString == outputString:
 		passedTestCases += 1
 		textColor = Fore.GREEN
 	else:
