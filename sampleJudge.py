@@ -4,61 +4,52 @@
 Reads TestCases from the given File and runs the File on each Test Set
 """
 
-import subprocess
 import argparse
-from sys import platform, stdout
+import difflib
+import subprocess
 from os import path
-from colorama import init, Fore
-from tabulate import tabulate
+from sys import platform
 
-if stdout.isatty():
-	init()
+from rich.console import Console
+from rich.table import Table
 
 
 def allowedFiles(choices):
-	def CheckExt(choices, fileName):
-		if not path.isfile(fileName):
-			raise argparse.ArgumentTypeError(f'File "{fileName}" doesn\'t Exist')
-		ext = path.splitext(fileName)[1][1:]
-		if ext not in choices:
-			raise argparse.ArgumentTypeError(f'Only {choices} type files are supported')
-		return fileName
-	return lambda fileName: CheckExt(choices, fileName)
+    def CheckExt(choices, fileName):
+        if not path.isfile(fileName):
+            raise argparse.ArgumentTypeError(f'File "{fileName}" doesn\'t Exist')
+        ext = path.splitext(fileName)[1][1:]
+        if ext not in choices:
+            raise argparse.ArgumentTypeError(f"Only {choices} type files are supported")
+        return fileName
+
+    return lambda fileName: CheckExt(choices, fileName)
 
 
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('file',
-                    type=allowedFiles({'py', 'cpp', 'c', 'java'}),
-                    help='Source File to Test')
-sourceFile = parser.parse_args().file
+parser.add_argument(
+    "file", type=allowedFiles({"py", "cpp", "c"}), help="Source File to Test"
+)
+file = parser.parse_args().file
+filename, file_extension = path.splitext(file)
 
-sampleTestCases = open(sourceFile).readlines()
+content = open(file).readlines()
 
-i = 0
-while i < len(sampleTestCases) and sampleTestCases[i] != "/***\n":
-	i += 1
+has_test_cases = any(True for line in content if line == "/***\n")
 
-if i == len(sampleTestCases):
-	print("No TestCase found in file:", sourceFile)
-	exit()
+if not has_test_cases:
+    print(f"No TestCase found in file: {file}")
+    exit()
 
-i += 1
-
-filename, file_extension = path.splitext(sourceFile)
-
-if file_extension == ".java":
-	command = ["java", filename]
-elif file_extension == ".py":
-	command = ["python3", sourceFile]
+if file_extension == ".py":
+    command = ["python3", file]
 elif file_extension == ".c" or file_extension == ".cpp":
-	if platform.startswith('win32'):
-		command = [filename + '.exe']
-	else:
-		command = [filename + '.out']
+    if platform.startswith("win32"):
+        command = [filename + ".exe"]
+    else:
+        command = ["./" + filename + ".out"]
 
-headers = ["input", "expected", "actual"]
-table = []
-
+rows = []
 totalTestCases = 0
 passedTestCases = 0
 failedTestCases = 0
@@ -66,66 +57,119 @@ ignoredTestCases = 0
 
 
 def colorThis(string: str, color: str):
-	return (color +
-         (Fore.RESET + '\n' + color).join(string.split('\n')) +
-            Fore.RESET)
+    return f"[{color}]{string}[/{color}]"
 
 
-while i < len(sampleTestCases) and "***/" not in sampleTestCases[i]:
-	inputString = ""
-	outputString = ""
-	while (i < len(sampleTestCases) and
-                sampleTestCases[i] != "\n" and
-                "***/" not in sampleTestCases[i] and
-                "---" not in sampleTestCases[i]):
-		inputString += sampleTestCases[i]
-		i += 1
+def run(input, expected):
+    global totalTestCases, passedTestCases, failedTestCases, ignoredTestCases
+    totalTestCases += 1
+    p = subprocess.Popen(
+        command,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        universal_newlines=True,
+    )
 
-	if "---" in sampleTestCases[i]:
-		i += 1
+    try:
+        o = p.communicate(input, timeout=5)
+    except subprocess.TimeoutExpired:
+        p.kill()
+        o = ["TLE"]
 
-	while (i < len(sampleTestCases) and
-                sampleTestCases[i] != "\n" and
-                "***/" not in sampleTestCases[i]):
-		outputString += sampleTestCases[i]
-		i += 1
+    returnCode = p.returncode
 
-	if i < len(sampleTestCases) and "***/" in sampleTestCases[i]:
-		break
-	else:
-		i += 1
-	if inputString == "":
-		continue
-	totalTestCases += 1
-	program = subprocess.Popen(command,
-                            stdin=subprocess.PIPE,
-                            stdout=subprocess.PIPE,
-                            universal_newlines=True)
-	o = program.communicate(inputString)
-	returnCode = program.returncode
+    output = "\n".join(list(map(str.strip, o[0].split("\n"))))
+    expected = "\n".join(list(map(str.strip, expected.split("\n"))))
 
-	outputString = '\n'.join(list(map(str.strip, outputString.split('\n'))))
-	actualString = '\n'.join(list(map(str.strip, o[0].split('\n'))))
+    output = output.strip()
+    expected = expected.strip()
 
-	if returnCode == 0 and outputString == "":
-		ignoredTestCases += 1
-		textColor = Fore.RESET
-	elif returnCode == 0 and actualString == outputString:
-		passedTestCases += 1
-		textColor = Fore.GREEN
-	else:
-		failedTestCases += 1
-		textColor = Fore.RED
+    if returnCode == 0 and expected == "":
+        ignoredTestCases += 1
+        textColor = "white"
+    elif returnCode == 0 and output == expected:
+        passedTestCases += 1
+        textColor = "green"
+    else:
+        failedTestCases += 1
+        textColor = "red"
 
-	table.append([colorThis(inputString, textColor),
-               colorThis(outputString, textColor),
-               colorThis(o[0] +
-                         ('' if returnCode == 0 else 'returned ' +
-                          str(returnCode)), textColor)])
+    diff = ""
+    if textColor == "red":
+        codes = difflib.SequenceMatcher(a=expected, b=output).get_opcodes()
+        for code in codes:
+            s = code[0]
+            e = expected[code[1] : code[2]]
+            o = output[code[3] : code[4]]
+            if s == "equal":
+                diff += colorThis(e, "white")
+            elif s == "delete":
+                diff += colorThis(e, "red")
+            elif s == "insert":
+                diff += colorThis(o, "green")
+            elif s == "replace":
+                diff += colorThis(e, "red") + colorThis(o, "green")
 
-print(tabulate(table, headers, tablefmt="grid"))
+    if returnCode != 0:
+        expected += f"\nreturned {returnCode}"
+
+    rows.append(
+        [
+            colorThis(input.strip(), textColor),
+            colorThis(expected, textColor),
+            colorThis(output, textColor),
+            diff,
+        ]
+    )
+
+
+inTest = False
+inInput = False
+inOutput = False
+input = ""
+expected = ""
+for line in content:
+    if inTest:
+        if "---" in line:
+            inOutput = True
+            inInput = False
+        elif "***/" in line:
+            run(input, expected)
+            inTest = False
+            inInput = False
+            inOutput = False
+            input = ""
+            expected = ""
+        elif inInput:
+            input += line
+        elif inOutput:
+            expected += line
+    else:
+        if "/***" in line:
+            inTest = True
+            inInput = True
+
+
+console = Console()
+
+table = Table(
+    show_header=True,
+    header_style="bold magenta",
+    show_lines=True,
+)
+
+table.add_column("Input")
+table.add_column("Expected")
+table.add_column("Actual")
+table.add_column("Diff")
+
+for row in rows:
+    table.add_row(*row)
+
+console.print(table)
+
 
 if ignoredTestCases + passedTestCases == totalTestCases:
-	print(Fore.GREEN, "PASSED", passedTestCases, '/', totalTestCases)
+    console.print(f"[green]Passed {passedTestCases}/{totalTestCases}[/green]")
 else:
-	print(Fore.RED, "FAILED", failedTestCases, '/', totalTestCases)
+    console.print(f"[red]Failed {failedTestCases}/{totalTestCases}[/red]")
